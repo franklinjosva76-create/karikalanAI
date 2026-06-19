@@ -1,6 +1,6 @@
 """
 KarikalanAI — FastAPI REST API v3.1
-─────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────────
 New in v3.0:
   • /memory endpoints (view, clear)
   • /multi-scrape endpoint
@@ -34,7 +34,7 @@ if not os.environ.get("GEMINI_API_KEY") and os.environ.get("GOOGLE_API_KEY"):
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backend.engine import KarikalanEngine
 
-# ── App ─────────────────────────────────────────────────────────────────────
+# ── App ──────────────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="Karikalan AI API",
@@ -47,7 +47,7 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# ── CORS ────────────────────────────────────────────────────────────────────
+# ── CORS ─────────────────────────────────────────────────────────────────────
 
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
