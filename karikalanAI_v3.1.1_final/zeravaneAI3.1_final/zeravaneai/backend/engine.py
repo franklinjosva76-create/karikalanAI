@@ -1,6 +1,6 @@
 """
 கரிகாலன் AI (Karikalan AI) — Core Engine v3.1
-─────────────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────
 v3.1 fixes over v3.0:
   • Fixed Crawl4AI: migrated from removed WebCrawler to AsyncWebCrawler
   • Fixed memory double-write: user messages no longer duplicated across turns
@@ -48,10 +48,10 @@ except ImportError:
     GEMINI_AVAILABLE = False
 
 
-# ═══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 # FALLBACK IN-MEMORY VECTOR STORE
 # (used only when chromadb is not installed)
-# ═══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
 class _Collection:
     """Lightweight in-memory vector store using word-overlap similarity."""
@@ -123,9 +123,9 @@ class _InMemoryClient:
         return list(self._collections.keys())
 
 
-# ═══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 # KARIKALAN ENGINE
-# ═══════════════════════════════════════════════════════════════════════
+# ══════════════════════════════════════════════════════════════════════════════
 
 class KarikalanEngine:
     """
@@ -252,9 +252,9 @@ class KarikalanEngine:
         except Exception:
             return False
 
-    # ══════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════════════
     # SCRAPING — 3-Tier
-    # ══════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════════════
 
     def _scrape_crawl4ai(self, url: str) -> str:
         """
@@ -369,9 +369,9 @@ class KarikalanEngine:
         result = self._scrape_requests(url)
         return result, "⚪ Standard Requests (Plain HTML)"
 
-    # ══════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════════════
     # RAG HELPERS
-    # ══════════════════════════════════════════════════════════════════════
+    # ══════════════════════════════════════════════════════════════════════════════
 
     def chunk_text(self, text: str, max_chars: int = 3000, overlap: int = 400) -> list:
         """
@@ -388,4 +388,161 @@ class KarikalanEngine:
             if end < len(text):
                 # Prefer paragraph break, then sentence break, then word break
                 for sep in ("\n\n", "\n", ". ", " "):
-                    pos = text.rfind(sep, start + max_chars // 2, end
+                    pos = text.rfind(sep, start + max_chars // 2, end)
+                    if pos > start + max_chars // 2:
+                        end = pos + len(sep)
+                        break
+            chunks.append(text[start:end])
+            start = end - overlap
+        return chunks
+
+    def get_memory_context(self, max_chars: int = 2000) -> str:
+        """
+        Extract conversation memory context for system prompt.
+        FIX: truncates at sentence boundary, not mid-word.
+        """
+        if not self.conversation_memory:
+            return ""
+        lines = [f"{m['role'].upper()}: {m['content']}" for m in self.conversation_memory]
+        text = "\n".join(lines)
+        if len(text) <= max_chars:
+            return text
+        truncated = text[:max_chars]
+        # Try to truncate at a sentence or line boundary
+        for boundary in [". ", "\n", " "]:
+            pos = truncated.rfind(boundary)
+            if pos > max_chars // 2:
+                return truncated[:pos + len(boundary)]
+        return truncated
+
+    def add_to_memory(self, role: str, content: str):
+        """Add a message to conversation memory (user or assistant)."""
+        self.conversation_memory.append({"role": role, "content": content})
+        # Keep only the last N turns (each turn = 2 messages: user + assistant)
+        max_messages = self.max_memory_turns * 2
+        if len(self.conversation_memory) > max_messages:
+            self.conversation_memory = self.conversation_memory[-max_messages:]
+
+    def clear_memory(self):
+        """Clear all conversation memory."""
+        self.conversation_memory = []
+
+    def _infer(self, prompt: str, use_memory: bool = True, context: str = "") -> str:
+        """
+        Unified LLM inference with 4-tier fallback and integrated memory management.
+        FIX: memory is now managed here to prevent double-writes from callers.
+        """
+        # Build system message with memory context
+        system_parts = [
+            "You are Karikalan AI, an expert assistant for software development and code analysis."
+        ]
+        if use_memory and self.conversation_memory:
+            memory_ctx = self.get_memory_context()
+            if memory_ctx:
+                system_parts.append(f"Recent conversation:\n{memory_ctx}")
+        if context:
+            system_parts.append(f"Retrieved context:\n{context}")
+        system_message = "\n\n".join(system_parts)
+
+        # Tier 1 — Gemini 2.5 Flash
+        if self.gemini_enabled and self.client:
+            try:
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=[
+                        genai_types.Content(
+                            role="user",
+                            parts=[genai_types.Part(text=f"{system_message}\n\n{prompt}")]
+                        )
+                    ]
+                )
+                if response.text:
+                    # Manage memory: add user message (first time), then assistant response
+                    if use_memory:
+                        # Only add user message if it's not already in memory (check last message)
+                        if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
+                            self.add_to_memory("user", prompt)
+                        self.add_to_memory("assistant", response.text)
+                    return response.text
+            except Exception as e:
+                print(f"[KarikalanEngine] Gemini error: {e}")
+
+        # Tier 2 — Groq llama-3.3-70b
+        if self.groq_enabled:
+            try:
+                import requests as req
+                groq_url = "https://api.groq.com/openai/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {self.groq_api_key}"}
+                payload = {
+                    "model": "llama-3.3-70b-versatile",
+                    "messages": [
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2048
+                }
+                resp = req.post(groq_url, json=payload, headers=headers, timeout=30)
+                if resp.status_code == 200:
+                    result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                    if result:
+                        if use_memory:
+                            if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
+                                self.add_to_memory("user", prompt)
+                            self.add_to_memory("assistant", result)
+                        return result
+            except Exception as e:
+                print(f"[KarikalanEngine] Groq error: {e}")
+
+        # Tier 3 — AI/ML API (gpt-4o-mini)
+        if self.aiml_enabled:
+            try:
+                import requests as req
+                aiml_url = "https://api.aiml.team/v1/chat/completions"
+                headers = {"Authorization": f"Bearer {self.aiml_api_key}"}
+                payload = {
+                    "model": "gpt-4o-mini",
+                    "messages": [
+                        {"role": "system", "content": system_message},
+                        {"role": "user", "content": prompt}
+                    ],
+                    "temperature": 0.7,
+                    "max_tokens": 2048
+                }
+                resp = req.post(aiml_url, json=payload, headers=headers, timeout=30)
+                if resp.status_code == 200:
+                    result = resp.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+                    if result:
+                        if use_memory:
+                            if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
+                                self.add_to_memory("user", prompt)
+                            self.add_to_memory("assistant", result)
+                        return result
+            except Exception as e:
+                print(f"[KarikalanEngine] AI/ML API error: {e}")
+
+        # Tier 4 — Ollama local
+        if self.ollama_enabled:
+            try:
+                import requests as req
+                ollama_url = f"{self.ollama_base}/api/generate"
+                payload = {
+                    "model": self.ollama_model,
+                    "prompt": f"{system_message}\n\n{prompt}",
+                    "stream": False
+                }
+                resp = req.post(ollama_url, json=payload, timeout=120)
+                if resp.status_code == 200:
+                    result = resp.json().get("response", "")
+                    if result:
+                        if use_memory:
+                            if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
+                                self.add_to_memory("user", prompt)
+                            self.add_to_memory("assistant", result)
+                        return result
+            except Exception as e:
+                print(f"[KarikalanEngine] Ollama error: {e}")
+
+        # Fallback
+        fallback_msg = "All LLM tiers are unavailable. Please check your API keys and network connectivity."
+        return fallback_msg
