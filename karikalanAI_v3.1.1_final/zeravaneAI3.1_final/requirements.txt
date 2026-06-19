@@ -19,14 +19,13 @@ beautifulsoup4>=4.12.0
 urllib3>=2.0.0
 
 # ── Crawl4AI (Tier-1 free scraper) ────────────────────────────────────────
-# Optional but strongly recommended — install separately if needed:
-# pip install crawl4ai
-# crawl4ai-setup  (downloads Playwright browsers)
 crawl4ai>=0.4.0
 
 # ── Vector Database ───────────────────────────────────────────────────────
-# Optional — falls back to in-memory store if not installed
 chromadb>=0.5.0
 
 # ── Data / Utils ──────────────────────────────────────────────────────────
 pydantic>=2.0.0
+
+# ── Dependency Fixes ──────────────────────────────────────────────────────
+protobuf==4.25.3
