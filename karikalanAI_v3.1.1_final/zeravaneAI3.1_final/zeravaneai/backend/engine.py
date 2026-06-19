@@ -1,6 +1,6 @@
 """
 கரிகாலன் AI (Karikalan AI) — Core Engine v3.1
-──────────────────────────────────────────────────────────────────────
+──────────────────────────────────────────────────────────────────────────────
 v3.1 fixes over v3.0:
   • Fixed Crawl4AI: migrated from removed WebCrawler to AsyncWebCrawler
   • Fixed memory double-write: user messages no longer duplicated across turns
@@ -14,6 +14,8 @@ v3.1 fixes over v3.0:
     an already-created coroutine object cross-thread (not thread-safe); fixed to
     pool.submit(lambda: asyncio.run(_crawl())) so the coroutine is created
     inside the worker thread where it will run.
+  • HOTFIX: _infer() now returns (response_text, model_name) tuple consistently
+    to match execute_live_agent_query() unpacking expectations.
 """
 
 import os
@@ -48,10 +50,10 @@ except ImportError:
     GEMINI_AVAILABLE = False
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # FALLBACK IN-MEMORY VECTOR STORE
 # (used only when chromadb is not installed)
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 
 class _Collection:
     """Lightweight in-memory vector store using word-overlap similarity."""
@@ -123,9 +125,9 @@ class _InMemoryClient:
         return list(self._collections.keys())
 
 
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 # KARIKALAN ENGINE
-# ══════════════════════════════════════════════════════════════════════════════
+# ════════════════════════════════════════════════════════════════════════════
 
 class KarikalanEngine:
     """
@@ -151,7 +153,7 @@ class KarikalanEngine:
     MIN_TEXT_LENGTH  = 100
     DB_PATH          = os.path.join(os.path.dirname(__file__), "..", "data", "zeravane_db")
 
-    # ── Init ────────────────────────────────────────────────────────────────
+    # ── Init ───────────────────────────────────────────────────────────────
 
     def __init__(self):
         # API keys
@@ -252,9 +254,9 @@ class KarikalanEngine:
         except Exception:
             return False
 
-    # ══════════════════════════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════════════════════════
     # SCRAPING — 3-Tier
-    # ══════════════════════════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════════════════════════
 
     def _scrape_crawl4ai(self, url: str) -> str:
         """
@@ -369,9 +371,9 @@ class KarikalanEngine:
         result = self._scrape_requests(url)
         return result, "⚪ Standard Requests (Plain HTML)"
 
-    # ══════════════════════════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════════════════════════
     # RAG HELPERS
-    # ══════════════════════════════════════════════════════════════════════════════
+    # ═══════════════════════════════════════════════════════════════════════
 
     def chunk_text(self, text: str, max_chars: int = 3000, overlap: int = 400) -> list:
         """
@@ -427,21 +429,33 @@ class KarikalanEngine:
         """Clear all conversation memory."""
         self.conversation_memory = []
 
-    def _infer(self, prompt: str, use_memory: bool = True, context: str = "") -> str:
+    def _get_current_model_name(self) -> str:
+        """Return the name of the LLM tier that would be used (for logging)."""
+        if self.gemini_enabled and self.client:
+            return "⚡ Gemini 2.5 Flash"
+        elif self.groq_enabled:
+            return "🔥 Groq llama-3.3-70b"
+        elif self.aiml_enabled:
+            return "🤖 AI/ML API (gpt-4o-mini)"
+        elif self.ollama_enabled:
+            return f"🏠 Ollama ({self.ollama_model})"
+        else:
+            return "❌ Fallback (No LLM Available)"
+
+    def _infer(self, system_instruction: str, prompt: str, use_memory: bool = True) -> tuple:
         """
         Unified LLM inference with 4-tier fallback and integrated memory management.
-        FIX: memory is now managed here to prevent double-writes from callers.
+        HOTFIX: Now returns (response_text, model_name) tuple consistently.
+        
+        Returns:
+            tuple: (response_text, model_used_name)
         """
         # Build system message with memory context
-        system_parts = [
-            "You are Karikalan AI, an expert assistant for software development and code analysis."
-        ]
+        system_parts = [system_instruction]
         if use_memory and self.conversation_memory:
             memory_ctx = self.get_memory_context()
             if memory_ctx:
                 system_parts.append(f"Recent conversation:\n{memory_ctx}")
-        if context:
-            system_parts.append(f"Retrieved context:\n{context}")
         system_message = "\n\n".join(system_parts)
 
         # Tier 1 — Gemini 2.5 Flash
@@ -463,7 +477,7 @@ class KarikalanEngine:
                         if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
                             self.add_to_memory("user", prompt)
                         self.add_to_memory("assistant", response.text)
-                    return response.text
+                    return response.text, "⚡ Gemini 2.5 Flash"
             except Exception as e:
                 print(f"[KarikalanEngine] Gemini error: {e}")
 
@@ -490,7 +504,7 @@ class KarikalanEngine:
                             if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
                                 self.add_to_memory("user", prompt)
                             self.add_to_memory("assistant", result)
-                        return result
+                        return result, "🔥 Groq llama-3.3-70b"
             except Exception as e:
                 print(f"[KarikalanEngine] Groq error: {e}")
 
@@ -517,7 +531,7 @@ class KarikalanEngine:
                             if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
                                 self.add_to_memory("user", prompt)
                             self.add_to_memory("assistant", result)
-                        return result
+                        return result, "🤖 AI/ML API (gpt-4o-mini)"
             except Exception as e:
                 print(f"[KarikalanEngine] AI/ML API error: {e}")
 
@@ -539,10 +553,159 @@ class KarikalanEngine:
                             if not self.conversation_memory or self.conversation_memory[-1]["role"] != "user":
                                 self.add_to_memory("user", prompt)
                             self.add_to_memory("assistant", result)
-                        return result
+                        return result, f"🏠 Ollama ({self.ollama_model})"
             except Exception as e:
                 print(f"[KarikalanEngine] Ollama error: {e}")
 
         # Fallback
         fallback_msg = "All LLM tiers are unavailable. Please check your API keys and network connectivity."
-        return fallback_msg
+        return fallback_msg, "❌ Fallback (No LLM Available)"
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # VECTOR STORE & RAG
+    # ═══════════════════════════════════════════════════════════════════════
+
+    def refresh_vector_index(self, collection_name: str, text_chunks: list) -> bool:
+        """Add/refresh text chunks to vector store."""
+        try:
+            col = self.chroma_client.get_or_create_collection(name=collection_name)
+            ids = [f"{collection_name}_{i}" for i in range(len(text_chunks))]
+            col.add(documents=text_chunks, ids=ids)
+            return True
+        except Exception as e:
+            print(f"[KarikalanEngine] refresh_vector_index error: {e}")
+            return False
+
+    def query_vector_context(self, collection_name: str, query: str, n_results: int = 4) -> str:
+        """Query vector store and return concatenated results."""
+        try:
+            col = self.chroma_client.get_collection(name=collection_name)
+            results = col.query(query_texts=[query], n_results=n_results)
+            docs = results.get("documents", [[]])[0]
+            return "\n\n".join(docs) if docs else ""
+        except Exception as e:
+            print(f"[KarikalanEngine] query_vector_context error: {e}")
+            return ""
+
+    def scrape_multiple_urls(self, urls: list) -> tuple:
+        """
+        Scrape and index multiple URLs in parallel.
+        Returns: (total_chunks, summary_text)
+        """
+        all_chunks = []
+        summary_lines = []
+
+        for url in urls:
+            try:
+                raw_text, method = self.scrape_live_url(url)
+                _err = ("Error:", "Crawl4AI_Error:", "ScraperAPI_Error:", "Requests_Error:")
+                if raw_text and len(raw_text) >= self.MIN_TEXT_LENGTH and not any(raw_text.startswith(p) for p in _err):
+                    chunks = self.chunk_text(raw_text)
+                    all_chunks.extend(chunks)
+                    summary_lines.append(f"✅ {url}: {len(chunks)} chunks ({method})")
+                else:
+                    summary_lines.append(f"❌ {url}: Scraping failed")
+            except Exception as e:
+                summary_lines.append(f"❌ {url}: {str(e)[:50]}")
+
+        if all_chunks:
+            self.refresh_vector_index(collection_name="zeravane_multi_url", text_chunks=all_chunks)
+
+        summary = "\n".join(summary_lines)
+        return all_chunks, summary
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # SPECIALIZED AGENTS
+    # ═══════════════════════════════════════════════════════════════════════
+
+    def detect_tech_stack(self, scraped_content: str, target_url: str = "") -> str:
+        """Analyze scraped content and detect tech stack."""
+        system_instruction = "You are a tech stack detector. Output markdown lists with confidence scores."
+        prompt = f"Target URL: {target_url}\nContent:\n{scraped_content[:5000]}"
+        result, _ = self._infer(system_instruction, prompt, use_memory=False)
+        return result
+
+    def generate_code_from_docs(self, docs_url: str, generation_request: str, language: str = "Python") -> tuple:
+        """Generate code from documentation."""
+        raw_docs, method = self.scrape_live_url(docs_url)
+        chunks = self.chunk_text(raw_docs)
+        self.refresh_vector_index(collection_name="zeravane_codegen", text_chunks=chunks)
+        context = self.query_vector_context(collection_name="zeravane_codegen", query=generation_request)
+        system_instruction = f"Generate precise {language} production code."
+        prompt = f"Doc Context:\n{context}\n\nRequest: {generation_request}"
+        code, model = self._infer(system_instruction, prompt, use_memory=False)
+        return code, method, model
+
+    def analyze_github_repo(self, repo_url: str) -> tuple:
+        """Analyze a GitHub repository."""
+        try:
+            # Extract owner/repo from URL
+            parts = repo_url.rstrip("/").split("/")
+            owner, repo = parts[-2], parts[-1]
+            
+            # Use GitHub API if token available, otherwise scrape
+            if self.github_token:
+                headers = {"Authorization": f"Bearer {self.github_token}"}
+                api_url = f"https://api.github.com/repos/{owner}/{repo}"
+                resp = requests.get(api_url, headers=headers, timeout=10)
+                if resp.status_code == 200:
+                    meta = resp.json()
+                else:
+                    meta = {}
+            else:
+                meta = {}
+
+            # Fallback: scrape the repo page
+            if not meta:
+                raw_web_data, _ = self.scrape_live_url(repo_url)
+            else:
+                raw_web_data = json.dumps(meta, indent=2)
+
+            metadata = {
+                "description": meta.get("description", "N/A"),
+                "language": meta.get("language", "N/A"),
+                "stars": meta.get("stargazers_count", 0),
+                "forks": meta.get("forks_count", 0),
+                "open_issues": meta.get("open_issues_count", 0),
+                "default_branch": meta.get("default_branch", "main"),
+                "license": (meta.get("license") or {}).get("name", "N/A"),
+                "updated_at": meta.get("updated_at", "N/A"),
+                "topics": meta.get("topics", [])
+            }
+            combined = f"=== GITHUB REPO: {owner}/{repo} ===\nDescription: {metadata['description']}\nLanguage: {metadata['language']}\n"
+            chunks = self.chunk_text(combined)
+            self.refresh_vector_index(collection_name="zeravane_github", text_chunks=chunks)
+            return combined, metadata
+        except Exception as e:
+            return f"GitHub_Error: {e}", {}
+
+    def execute_live_agent_query(self, user_query: str, target_url: str = None, force_rescrape: bool = False, use_memory: bool = True) -> tuple:
+        """
+        Execute a live agent query with optional URL context.
+        
+        Returns:
+            tuple: (response_text, context_payload, scrape_method, model_used)
+        """
+        context_payload = ""
+        collection_id   = self._cached_collection
+        scrape_method   = "N/A"
+        _err = ("Error:", "Crawl4AI_Error:", "ScraperAPI_Error:", "Requests_Error:")
+
+        if target_url:
+            if target_url != self._cached_url or force_rescrape:
+                raw_web_data, scrape_method = self.scrape_live_url(target_url)
+                if raw_web_data and len(raw_web_data) >= self.MIN_TEXT_LENGTH and not any(raw_web_data.startswith(p) for p in _err):
+                    data_chunks = self.chunk_text(raw_web_data)
+                    if self.refresh_vector_index(collection_name=collection_id, text_chunks=data_chunks):
+                        self._cached_url = target_url
+                        context_payload  = self.query_vector_context(collection_name=collection_id, query=user_query)
+                else:
+                    context_payload = f"[Scraping failed: {raw_web_data[:100]}]"
+            else:
+                scrape_method   = "✅ Cache Hit"
+                context_payload = self.query_vector_context(collection_name=collection_id, query=user_query)
+
+        system_instruction = "You are Karikalan AI v3.1. Answer code questions precisely using history and live context."
+        prompt = f"Context:\n{context_payload}\n\nQuery: {user_query}"
+        response_text, model_used = self._infer(system_instruction, prompt, use_memory=use_memory)
+        return response_text, context_payload, scrape_method, model_used
