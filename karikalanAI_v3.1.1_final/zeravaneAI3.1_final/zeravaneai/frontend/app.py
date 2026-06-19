@@ -322,7 +322,7 @@ UI_TRANSLATIONS = {
 # =============================================================================
 # DESIGN SYSTEM — CHOLA HERITAGE PALETTE
 # =============================================================================
-st.markdown("""
+st.markdown(""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -394,4 +394,4 @@ st.markdown("""
     box-shadow: 0 0 10px rgba(200,146,42,0.15), inset 0 1px 0 rgba(200,146,42,0.1) !important;
 }
 .stButton > button:hover {
-    background: linear-gradient(135deg, rgba(200,146,42,0.18)"
+    background: linear-gradient(135deg, rgba(200,146,42,0.18)
