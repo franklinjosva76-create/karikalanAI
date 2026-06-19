@@ -345,7 +345,7 @@ st.markdown(""
     --border-gold:  rgba(200,146,42,0.35);
 }
 
-/* ── Global ── */
+/* Global */
 .stApp {
     background:
         radial-gradient(ellipse at 20% 10%, rgba(139,69,19,0.08) 0%, transparent 50%),
