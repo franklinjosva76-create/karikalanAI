@@ -129,7 +129,7 @@ UI_TRANSLATIONS = {
     },
     "Tamil (தமிழ்)": {
         "title": "கரிகாலன் AI",
-        "tagline": "நிறுவன அளவிலான செயற்கை நுண்ணறிவு குறியீட்டு தளம் · தமிழ் சோழர் பாரம்பரியம்",
+        "tagline": "நிறுவன அளவிலான செயற்கை நுண்ணறிவு குறியீட்டு தளம் · தமிழ் சோழர் பார��[...]",
         "lbl_llm_tiers": "🧠 LLM படிநிலைகள்",
         "lbl_scraping": "🕷️ வலை சேகரிப்பு படிநிலைகள்",
         "lbl_memory": "💬 உரையாடல் நினைவகம்",
@@ -139,7 +139,7 @@ UI_TRANSLATIONS = {
         "lbl_vectordb": "🗄️ திசையன் தரவுத்தளம்",
         "btn_clear_cache": "🗑️ தற்காலிக சேமிப்பு அழி",
         "exp_api_keys": "🔑 API விசைகள்",
-        "tab_titles": ["💬 AI உதவியாளர்", "🔗 பல URL RAG", "🐙 GitHub பகுப்பாய்வு", "🔍 Tech Stack கண்டறிவு", "⚙️ குறியீடு உருவாக்கம்"],
+        "tab_titles": ["💬 AI உதவியாளர்", "🔗 பல URL RAG", "🐙 GitHub பகுப்பாய்வு", "🔍 Tech Stack கண்டறிவு", "⚙️ குற[...]"],
         
         # Tab 1
         "t1_title": "💬 AI உரையாடல் முகவர்",
@@ -147,11 +147,11 @@ UI_TRANSLATIONS = {
         "t1_url_label": "இலக்கு இணையதள முகவரி (விருப்பமிருந்தால்)",
         "t1_url_placeholder": "https://docs.fastapi.tiangolo.com  (அடிப்படை அறிவுக்கு இதை காலியாக விடவும்)",
         "t1_force_scrape": "🔄 மீண்டும் சேகரி",
-        "t1_banner_core": "🧠 அடிப்படை நிலை — பேஸ் மாடல் அறிவு மட்டுமே · வலை சேகரிப்பு இல்லை",
+        "t1_banner_core": "🧠 அடிப்படை நிலை — பேஸ் மாடல் அறிவு மட்டுமே · வலை சேகரிப்பு இல்ல�[...]",
         "t1_banner_web": "🌐 வலை நுண்ணறிவு நிலை — நேரடி வலை சேகரிப்பு செயலில் உள்ளது",
         "t1_history_lbl": "உரையாடல் வரலாறு",
         "t1_query_lbl": "உங்கள் கேள்வி",
-        "t1_query_placeholder": "மென்பொருள் குறியீடு, APIகள், கட்டமைப்புகள், ஆர்கிடெக்சர் பற்றி எதுவாக இருந்தாலும் கேளுங்கள்...",
+        "t1_query_placeholder": "மென்பொருள் குறியீடு, APIகள், கட்டமைப்புகள், ஆர்கிடெக்சர் பற்ற�[...]",
         "t1_btn_execute": "🏛️ முகவரை இயக்கு",
         "t1_btn_clear": "🗑️ துடை",
         "t1_err_query": "தயவுசெய்து ஒரு கேள்வியை உள்ளிடவும்.",
@@ -164,8 +164,8 @@ UI_TRANSLATIONS = {
         # Tab 2
         "t2_title": "🔗 பல URL அறிவுத் தளம்",
         "t2_sub": "ஒன்றுக்கும் மேற்பட்ட URLகளைச் சேகரித்து அவை அனைத்திலும் தேடவும்",
-        "t2_banner": "📡 பன்முக மூல நுண்ணறிவு — ஒவ்வொரு URL-உம் 3-அடுக்கு ஃபால்பேக் மூலம் சேகரிக்கப்பட்டு, ஒரு ChromaDB குறியீட்டில் இணைக்கப்படுகிறது",
-        "t2_urls_lbl": "URLகள் (வரியிற்கு ஒன்று)",
+        "t2_banner": "📡 பன்முக மூல நுண்ணறிவு — ஒவ்வொரு URL-உம் 3-அடுக்கு ஃபால்பேக் மூலம் ச[...]",
+        "t2_urls_lbl": "URLகள் (வரியிற்கு ஒன��று)",
         "t2_urls_placeholder": "https://docs.fastapi.tiangolo.com\nhttps://docs.pydantic.dev",
         "t2_query_lbl": "கேள்வி",
         "t2_query_placeholder": "இந்த கட்டமைப்புகளில் அங்கீகார அணுகுமுறைகளை ஒப்பிடுக...",
@@ -179,48 +179,17 @@ UI_TRANSLATIONS = {
         "t2_err_no_scrape": "எந்த URLகளும் வெற்றிகரமாகச் சேகரிக்கப்படவில்லை.",
 
         # Tab 3
-        "t3_title": "🐙 GitHub களஞ்சிய பகுப்பாய்வி",
-        "t3_sub": "எந்தவொரு பொது GitHub களஞ்சியத்தையும் ஆழமாக பகுப்பாய்வு செய்யுங்கள் — README, கோப்பு மரம், மெட்டாடேட்டா",
-        "t3_url_lbl": "களஞ்சிய URL",
+        "t3_title": "🐙 GitHub களஞ்ஜிய பகுப்பாய்வி",
+        "t3_sub": "எந்தவொரு பொது GitHub களஞ்ஜியத்தையும் ஆழமாக பகுப்பாய்வு செய்யுங்கள் �[...]",
+        "t3_url_lbl": "களஞ்ஜிய URL",
         "t3_url_placeholder": "https://github.com/tiangolo/fastapi",
-        "t3_query_lbl": "இந்த களஞ்சியத்தைப் பற்றிக் கேளுங்கள்",
+        "t3_query_lbl": "இந்த களஞ்ஜியத்தைப் பற்றிக் கேளுங்கள்",
         "t3_query_placeholder": "நான் எப்படி தொடங்குவது? இதன் கட்டமைப்பு என்ன?",
-        "t3_btn_analyze": "🏛️ களஞ்சியத்தை பகுப்பாய்வு செய்",
+        "t3_btn_analyze": "🏛️ களஞ்ஜியத்தை பகுப்பாய்வு செய்",
         "t3_err_url": "ஒரு GitHub URL ஐ உள்ளிடவும்.",
         "t3_err_query": "ஒரு கேள்வியை உள்ளிடவும்.",
-        "t3_spinner_fetch": "🐙 GitHub API மூலம் களஞ்சியத்தைப் பெறுகிறது...",
-        "t3_m1": "⭐ நட்சத்திரங்கள்", "t3_m2": "🍴 கிளைகள்", "t3_m3": "🐛 பிழைகள்", "t3_m4": "💻 முதன்மை மொழி", "t3_m5": "📄 உரிமம்",
-        "t3_spinner_analyze": "🧠 பகுப்பாய்வு செய்கிறது...",
-        "t3_resp_lbl": "பகுப்பாய்வு",
-        "t3_raw_lbl": "📁 மூல களஞ்சிய தரவு",
-
-        # Tab 4
-        "t4_title": "🔍 தொழில்நுட்ப அடுக்கு கண்டறிவி",
-        "t4_sub": "எந்தவொரு தளத்தையும் சேகரித்து அதன் முழுமையான தொழில்நுட்ப அடுக்கைக் கண்டறியவும்",
-        "t4_url_lbl": "இணையதள URL",
-        "t4_url_placeholder": "https://vercel.com",
-        "t4_btn_detect": "🔍 அடுக்கைக் கண்டறி",
-        "t4_err_url": "ஒரு URL ஐ உள்ளிடவும்.",
-        "t4_spinner": "🌐 இணையதளத்தைச் சேகரித்து பகுப்பாய்வு செய்கிறது...",
-        "t4_results_lbl": "கண்டறியப்பட்ட அடுக்கு",
-        "t4_raw_lbl": "🔍 சேகரிக்கப்பட்ட மூல உள்ளடக்கம்",
-
-        # Tab 5
-        "t5_title": "⚙️ நேரடி ஆவணங்களிலிருந்து குறியீடு உருவாக்கி",
-        "t5_sub": "ஆவணங்கள் URL ஐ உள்ளிடவும், கரிகாலன் AI அதைச் சேகரித்து உற்பத்திக்குத் தயாரான குறியீட்டை உருவாக்கும்",
-        "t5_banner": "🤖 நேரடி ஆவணங்கள் → உற்பத்தி குறியீடு — Crawl4AI ஆவணங்களைப் பெறுகிறது · RAG உள்ளடக்கத்தை வரிசைப்படுத்துகிறது · LLM கொதிகலன் குறியீட்டை உருவாக்குகிறது",
-        "t5_url_lbl": "ஆவணப்படுத்தல் URL",
-        "t5_url_placeholder": "https://docs.stripe.com/api",
-        "t5_request_lbl": "என்ன குறியீடு உருவாக்கப்பட வேண்டும்?",
-        "t5_request_placeholder": "CRUD செயல்பாடுகள் மற்றும் JWT அங்கீகாரத்துடன் முழுமையான REST API ஐ உருவாக்கவும்...",
-        "t5_lang_lbl": "இலக்கு மொழி",
-        "t5_btn_gen": "⚙️ குறியீட்டை உருவாக்கு",
-        "t5_err_url": "ஒரு ஆவணப்படுத்தல் URL ஐ உள்ளிடவும்.",
-        "t5_err_req": "உங்களுக்கு என்ன குறியீடு வேண்டும் என்பதை விவரிக்கவும்.",
-        "t5_spinner": "🌐 ஆவணங்களைச் சேகரித்து குறியீட்டை உருவாக்குகிறது...",
-        "t5_results_lbl": "உருவாக்கப்பட்ட குறியீடு",
-
-        "sys_instruction_suffix": "Respond strictly and entirely in pure, formal Tamil text. Avoid transliterating English words where high-quality Tamil engineering terms exist."
+        "t3_spinner_fetch": "🐙 GitHub API மூலம் களஞ்ஜியத்தைப் பெறுகிறது...",
+        "t3_m1": "⭐ நட்சித்த்ரங்கள்", "t3_m2": "🍴 கிளைகள்", "t3_m3": "🐛 பிழைகள்", "t3_m4": "�[...]"
     },
     "Tanglish": {
         "title": "KARIKALAN AI",
@@ -259,7 +228,7 @@ UI_TRANSLATIONS = {
         # Tab 2
         "t2_title": "🔗 Multi-URL Knowledge Base",
         "t2_sub": "Multiple URL-களை scrape பண்ணி ஒரே நேரத்துல query பண்ணுங்க",
-        "t2_banner": "📡 Multi-Source Intelligence — ஒவ்வொரு URL-உம் 3-tier fallback வழியா scrape செய்யப்பட்டு, ஒரே ChromaDB index-ல merge பண்ணப்படும்",
+        "t2_banner": "📡 Multi-Source Intelligence — ஒவ்வொரு URL-உம் 3-tier fallback வழியா scrape செய்யப்பட்டு, ஒரே ChromaDB index-[...]",
         "t2_urls_lbl": "URLs (ஒரு வரிக்கு ஒன்று)",
         "t2_urls_placeholder": "https://docs.fastapi.tiangolo.com\nhttps://docs.pydantic.dev",
         "t2_query_lbl": "Query",
@@ -303,7 +272,7 @@ UI_TRANSLATIONS = {
         # Tab 5
         "t5_title": "⚙️ Code Generator from Live Docs",
         "t5_sub": "Docs URL-ஐ குடுத்தா, Karikalan AI அதை scrape பண்ணி production-ready code-ஐ generate பண்ணிடும்",
-        "t5_banner": "🤖 Live Docs → Production Code — Crawl4AI docs-ஐ எடுக்கும் · RAG content-ஐ index பண்ணும் · LLM boilerplate-ஐ generate பண்ணும்",
+        "t5_banner": "🤖 Live Docs → Production Code — Crawl4AI docs-ஐ எடுக்கும் · RAG content-ஐ index பண்ணும் · LLM boilerplate-ஐ generate பண்[...]",
         "t5_url_lbl": "Documentation URL",
         "t5_url_placeholder": "https://docs.stripe.com/api",
         "t5_request_lbl": "என்ன code generate பண்ணனும்?",
@@ -315,14 +284,14 @@ UI_TRANSLATIONS = {
         "t5_spinner": "🌐 Docs-ஐ scrape பண்ணி code generate பண்ணிட்டு இருக்கு...",
         "t5_results_lbl": "GENERATED CODE",
 
-        "sys_instruction_suffix": "Respond in a fluid conversational mix of casual Tamil language and clear English technical terms (Tanglish). Use absolute English terms for coding concepts like 'database', 'function', 'class', 'loop', 'variable', 'route', and 'API' so developers can directly read your architecture advice into structural code."
+        "sys_instruction_suffix": "Respond in a fluid conversational mix of casual Tamil language and clear English technical terms (Tanglish). Use absolute English terms for coding concepts like[...]"
     }
 }
 
 # =============================================================================
 # DESIGN SYSTEM — CHOLA HERITAGE PALETTE
 # =============================================================================
-st.markdown(""
+st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -394,4 +363,7 @@ st.markdown(""
     box-shadow: 0 0 10px rgba(200,146,42,0.15), inset 0 1px 0 rgba(200,146,42,0.1) !important;
 }
 .stButton > button:hover {
-    background: linear-gradient(135deg, rgba(200,146,42,0.18)"""
+    background: linear-gradient(135deg, rgba(200,146,42,0.18));
+}
+</style>
+""", unsafe_allow_html=True)
